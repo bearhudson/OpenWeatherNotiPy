@@ -1,0 +1,3 @@
+[submodule "WeatherClass"]
+	path = WeatherClass
+	url = git@github.com:bearhudson/WeatherClass.git

@@ -1,2 +1,5 @@
-if __name__ == "__main__":
-    print("Do not call directly!")
+from WeatherClass.WeatherClass.weatherclass import WeatherClass
+
+weather_location = WeatherClass(02188)
+
+
