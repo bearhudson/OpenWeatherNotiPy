@@ -14,10 +14,9 @@ current_weather_slice = weather_location.weather_data['current']
 
 def draw_main_table() -> Table:
     now = datetime.datetime.now()
-    sub_table = Table()
+    conditions_table = Table(box=None)
     for conditions in current_weather_slice['weather']:
-        sub_table.add_column(f"{conditions['id']}")
-        sub_table.add_row(conditions['main'])
+        conditions_table.add_column(f"{conditions['main']}: {conditions['id']}")
 
     main_table = Table(title=f"Weather for {ZIPCODE}",
                        width=100, box=box.MINIMAL_DOUBLE_HEAD)
@@ -30,10 +29,10 @@ def draw_main_table() -> Table:
     main_table.add_column("Currently")
     main_table.add_row(f"{weather_location.lat}, {weather_location.lon}",
                        f"{datetime.datetime.strftime(now, '%y/%m/%d')}",
-                       f"{datetime.datetime.strftime(now, '%H:%M:%S')}",
+                       f"{datetime.datetime.strftime(now, '%H:%M')}",
                        f"{current_weather_slice['temp']}",
                        f"{current_weather_slice['humidity']}",
-                       f"{current_weather_slice['clouds']}", sub_table)
+                       f"{current_weather_slice['clouds']}", conditions_table)
     return main_table
 
 
