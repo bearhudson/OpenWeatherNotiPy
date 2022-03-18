@@ -39,8 +39,14 @@ def draw_main_table() -> Table:
     return main_table
 
 
-with Live(draw_main_table(), refresh_per_second=4) as live:
-    while True:
-        time.sleep(60)
-        weather_location.update_weather()
-        live.update(draw_main_table())
+def main():
+    with Live(draw_main_table(), refresh_per_second=4) as live:
+        while True:
+            time.sleep(60)
+            weather_location.update_weather()
+            live.update(draw_main_table())
+
+
+if __name__ == "__main__":
+    os.system('cls' if os.name == 'nt' else 'clear')
+    main()
