@@ -157,7 +157,7 @@ def draw_main_table() -> Table:
 
     historic_slice = []
 
-    while len(historic_slice) <= 2:
+    while len(historic_slice) <= 1:
         weather_location.get_historic_weather(len(historic_slice))
         historic_slice += weather_location.historic_data['hourly'][:1]
 
