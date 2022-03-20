@@ -30,32 +30,36 @@ sunset_dt = datetime.datetime.fromtimestamp(current_weather_slice['sunset'])
 
 
 def draw_main_table() -> Table:
+    header_style = "bold yellow"
     main_table = Table(width=140, box=None, padding=0, pad_edge=False)
-    header_table = Table(width=140, box=None, padding=0, pad_edge=False, show_footer=True, show_header=True)
-    today_table = Table(box=box.MINIMAL_HEAVY_HEAD, padding=0, pad_edge=False, width=140, header_style='bold')
-    conditions_table = Table(box=None, padding=1, pad_edge=False)
-    hourly_conditions_table = Table(box=None, padding=1, pad_edge=False)
-    future_conditions_table = Table(box=box.MINIMAL_HEAVY_HEAD, padding=0, pad_edge=False, width=140)
-    historic_conditions_table = Table(box=box.MINIMAL_HEAVY_HEAD, padding=0, pad_edge=False, width=140)
-
-    header_temp = Text(f"{datetime.datetime.strftime(datetime.datetime.now(), '%H:%M')} // "
-                       f"{current_weather_slice['temp']} {temp_symbol}")
-    header_temp.stylize('bold')
+    header_table = Table(width=140, box=None, padding=0, pad_edge=False, show_footer=True,
+                         show_header=True, style=f"{header_style}")
+    today_table = Table(box=box.MINIMAL_HEAVY_HEAD,
+                        padding=0, pad_edge=False, width=140, row_styles=["dim", ""])
+    conditions_table = Table(box=None, padding=1, pad_edge=False, style='italic white')
+    hourly_conditions_table = Table(box=None, padding=1, pad_edge=False, style='italic white')
+    future_conditions_table = Table(box=box.MINIMAL_HEAVY_HEAD,
+                                    padding=0, pad_edge=False, width=140, row_styles=["dim", ""])
+    historic_conditions_table = Table(box=box.MINIMAL_HEAVY_HEAD,
+                                      padding=0, pad_edge=False, width=140, row_styles=["dim", ""])
+    header_temp = Text(f"🕐 {datetime.datetime.strftime(datetime.datetime.now(), '%H:%M')} // "
+                       f"🌡️ {current_weather_slice['temp']} {temp_symbol}")
+    header_temp.stylize(f"{header_style}")
     header_table.add_column(header_temp)
     header_location = Text(f"Currently in {weather_location.geo_data['name']} ->")
-    header_location.stylize('bold')
+    header_location.stylize(f"{header_style}")
     header_table.add_column(header_location)
-    header_desc = Text(f"{daily_weather_slice[0]['weather'][0]['description']}")
-    header_desc.stylize('bold')
+    header_desc = Text(f"🌄 {daily_weather_slice[0]['weather'][0]['description']}")
+    header_desc.stylize(f"{header_style}")
     header_table.add_column(header_desc)
-    header_pressure = Text(f"{current_weather_slice['pressure']} mb")
-    header_pressure.stylize('bold')
+    header_pressure = Text(f"🌈 {current_weather_slice['pressure']} mb")
+    header_pressure.stylize(f"{header_style}")
     header_table.add_column(header_pressure)
-    header_sunset = Text(f"Sunset: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
-    header_sunset.stylize('bold')
+    header_sunset = Text(f"🌞 Sunset: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
+    header_sunset.stylize(f"{header_style}")
     header_table.add_column(header_sunset)
-    header_moon = Text(f"{weather_location.moon_phase_to_string(daily_weather_slice[0]['moon_phase'])}")
-    header_moon.stylize('bold')
+    header_moon = Text(f"🌝 {weather_location.moon_phase_to_string(daily_weather_slice[0]['moon_phase'])}")
+    header_moon.stylize(f"{header_style}")
     header_table.add_column(header_moon)
 
     for hourly_conditions in current_weather_slice['weather']:
@@ -166,7 +170,7 @@ def draw_main_table() -> Table:
 
 
 def main():
-    with Live(draw_main_table(), refresh_per_second=1) as live:
+    with Live(draw_main_table(), refresh_per_second=4) as live:
         while True:
             weather_location.update_weather()
             live.update(draw_main_table())
