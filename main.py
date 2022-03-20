@@ -27,11 +27,15 @@ def draw_main_table() -> Table:
     current_weather_slice = weather_location.weather_data['current']
     hourly_weather_slice = weather_location.weather_data['hourly']
     daily_weather_slice = weather_location.weather_data['daily']
+
     del daily_weather_slice[0]
+
     dt = datetime.datetime.fromtimestamp(current_weather_slice['dt'])
     sunset_dt = datetime.datetime.fromtimestamp(current_weather_slice['sunset'])
+
     header_style = "bold yellow1"
     main_table_style = "dark_orange"
+
     main_table = Table(width=140, box=None, padding=0, pad_edge=False, style=f"{main_table_style}")
     header_table = Table(width=140, box=None, padding=0, pad_edge=False, show_footer=True,
                          show_header=True, style=f"{header_style}")
@@ -43,8 +47,10 @@ def draw_main_table() -> Table:
                                     padding=0, pad_edge=False, width=140, row_styles=["grey50", "white"])
     historic_conditions_table = Table(box=box.MINIMAL_HEAVY_HEAD,
                                       padding=0, pad_edge=False, width=140, row_styles=["grey50", "white"])
+
     header_temp = Text(f"🕐 {datetime.datetime.strftime(datetime.datetime.now(), '%H:%M')} // "
                        f"🌡️ {current_weather_slice['temp']} {temp_symbol}")
+
     header_temp.stylize(f"{header_style}")
     header_table.add_column(header_temp)
     header_location = Text(f"Currently in {weather_location.geo_data['name']} ->")
@@ -103,6 +109,7 @@ def draw_main_table() -> Table:
     future_conditions_table.add_column("Sunrise", justify="right")
     future_conditions_table.add_column("Moon", justify="right")
     future_conditions_table.add_column("Forecast")
+
     for forecast_data in daily_weather_slice[:7]:
         dt_forecast = datetime.datetime.fromtimestamp(forecast_data['dt'])
         dt_sunrise = datetime.datetime.fromtimestamp(forecast_data['sunrise'])
@@ -119,6 +126,7 @@ def draw_main_table() -> Table:
                                         f"{datetime.datetime.strftime(dt_sunrise, '%H:%M')}",
                                         f"{weather_location.moon_phase_to_string(forecast_data['moon_phase'])}",
                                         f"{weather_location.check_condition(forecast_data['weather'][0]['id'])}")
+
     for index, hourly_data in zip(range(3), hourly_weather_slice[1:]):
         for hourly_conditions in hourly_data['weather']:
             hourly_conditions_table.add_column(f"{hourly_conditions['main']}")
@@ -146,10 +154,13 @@ def draw_main_table() -> Table:
     historic_conditions_table.add_column("Wind S", justify="right")
     historic_conditions_table.add_column("Wind D", justify="right")
     historic_conditions_table.add_column("Forecast")
+
     historic_slice = []
+
     while len(historic_slice) <= 2:
         weather_location.get_historic_weather(len(historic_slice))
         historic_slice += weather_location.historic_data['hourly'][:1]
+
     for historic_data in historic_slice:
         dt_old = datetime.datetime.fromtimestamp(historic_data['dt'])
         historic_conditions_table.add_row(f"{datetime.datetime.strftime(dt_old, '%y/%m/%d')}",
@@ -167,6 +178,7 @@ def draw_main_table() -> Table:
     main_table.add_row(today_table)
     main_table.add_row(future_conditions_table)
     main_table.add_row(historic_conditions_table)
+
     return main_table
 
 
