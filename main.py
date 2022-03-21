@@ -2,15 +2,18 @@
 
 import datetime
 import time
+import os
+import random
 from rich.live import Live
 from rich.table import Table
 from rich import box
 from rich.text import Text
 from WeatherClass.WeatherClass.weatherclass import WeatherClass
-import os
+from newsapi import NewsApiClient
 
 ZIPCODE = os.environ.get('ZIPCODE')
 UNITS = os.environ.get('UNITS')
+NEWS_API = os.environ.get("NEWSAPI_KEY")
 SLEEP = 60
 
 if UNITS == 'imperial':
@@ -27,6 +30,8 @@ def draw_main_table() -> Table:
     current_weather_slice = weather_location.weather_data['current']
     hourly_weather_slice = weather_location.weather_data['hourly']
     daily_weather_slice = weather_location.weather_data['daily']
+    news = NewsApiClient(api_key=NEWS_API)
+    top_headlines = news.get_top_headlines(sources='bbc-news')
 
     del daily_weather_slice[0]
 
@@ -47,10 +52,11 @@ def draw_main_table() -> Table:
                                     padding=0, pad_edge=False, width=140, row_styles=["grey50", "white"])
     historic_conditions_table = Table(box=box.MINIMAL_HEAVY_HEAD,
                                       padding=0, pad_edge=False, width=140, row_styles=["grey50", "white"])
+    top_headlines_table = Table(box=None,
+                                padding=0, pad_edge=False, width=140, row_styles=["grey50", "white"])
 
     header_temp = Text(f"🕐 {datetime.datetime.strftime(datetime.datetime.now(), '%H:%M')} // "
                        f"🌡️ {current_weather_slice['temp']} {temp_symbol}")
-
     header_temp.stylize(f"{header_style}")
     header_table.add_column(header_temp)
     header_location = Text(f"Currently in {weather_location.geo_data['name']} ->")
@@ -174,10 +180,16 @@ def draw_main_table() -> Table:
                                           f"{historic_data['wind_speed']} {speed_symbol}",
                                           f"{weather_location.deg_to_direction(historic_data['wind_deg'])}",
                                           f"{weather_location.check_condition(historic_data['weather'][0]['id'])}")
+    articles = top_headlines['articles']
+    top_headlines_table.add_row(f"\tHeadlines ->", style="dark_orange")
+    for article in random.sample(articles, 4):
+        top_headlines_table.add_row(f"\t{article['description']}")
+
     main_table.add_row(header_table)
     main_table.add_row(today_table)
     main_table.add_row(future_conditions_table)
     main_table.add_row(historic_conditions_table)
+    main_table.add_row(top_headlines_table)
 
     return main_table
 
