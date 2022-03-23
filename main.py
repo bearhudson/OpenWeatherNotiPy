@@ -16,9 +16,8 @@ from functions import *
 ZIPCODE = os.environ.get('ZIPCODE')
 UNITS = os.environ.get('UNITS')
 NEWS_API = os.environ.get("NEWSAPI_KEY")
-SLEEP = 60
 DISPLAY_WIDTH = os.get_terminal_size().columns
-
+SLEEP = 60
 
 if UNITS == 'imperial':
     weather_location = WeatherClass(ZIPCODE, 'imperial')
@@ -54,7 +53,7 @@ def draw_main_table() -> Table:
     dt = datetime.datetime.fromtimestamp(current_weather_slice['dt'])
     sunset_dt = datetime.datetime.fromtimestamp(current_weather_slice['sunset'])
     sunrise_dt = datetime.datetime.fromtimestamp(current_weather_slice['sunrise'])
-    sun_icons = get_sun_icons(dt, sunrise_dt, sunset_dt)
+    sun_icon = get_sun_icons(dt, sunrise_dt, sunset_dt)
 
     header_style = "bold yellow1"
     main_table_style = "dark_orange"
@@ -89,12 +88,12 @@ def draw_main_table() -> Table:
     header_pressure = Text(f"🌈 {current_weather_slice['pressure']} mb {''.join(pressure_display)}")
     header_pressure.stylize(f"{header_style}")
     header_table.add_column(header_pressure)
-    if sun_icons[0] == "am":
-        header_sunset = Text(f"{sun_icons[1]} Sunset: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
+    if sun_icon[0] == "am":
+        header_sunset = Text(f"{sun_icon[1]} Sunset: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
         header_sunset.stylize(f"{header_style}")
         header_table.add_column(header_sunset)
     else:
-        header_sunrise = Text(f"{sun_icons[1]} Sunrise: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
+        header_sunrise = Text(f"{sun_icon[1]} Sunrise: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
         header_sunrise.stylize(f"{header_style}")
         header_table.add_column(header_sunrise)
     header_moon = Text(f"🌜 {weather_location.moon_phase_to_string(daily_weather_slice[0]['moon_phase'])}")
