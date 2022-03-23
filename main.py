@@ -86,11 +86,11 @@ def draw_main_table() -> Table:
     header_pressure.stylize(f"{header_style}")
     header_table.add_column(header_pressure)
     if sun_icons[0] == "am":
-        header_sunset = Text(f"{sun_icons[1]} {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
+        header_sunset = Text(f"{sun_icons[1]} Sunset: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
         header_sunset.stylize(f"{header_style}")
         header_table.add_column(header_sunset)
     else:
-        header_sunrise = Text(f"{sun_icons[1]} {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
+        header_sunrise = Text(f"{sun_icons[1]} Sunrise: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
         header_sunrise.stylize(f"{header_style}")
         header_table.add_column(header_sunrise)
     header_moon = Text(f"🌜 {weather_location.moon_phase_to_string(daily_weather_slice[0]['moon_phase'])}")

@@ -104,4 +104,4 @@ def get_time_emoji(hour):
         icon = 10
     elif hour == 23:
         icon = 11
-    return hour_icons[icon - 1]
+    return hour_icons[icon]
