@@ -3,7 +3,6 @@
 import datetime
 import time
 import os
-import random
 from rich.live import Live
 from rich.table import Table
 from rich import box
@@ -24,7 +23,7 @@ if UNITS == 'imperial':
     temp_symbol = '℉'
     speed_symbol = 'mph'
 else:
-    weather_location = WeatherClass(ZIPCODE, 'imperial')
+    weather_location = WeatherClass(ZIPCODE, 'metric')
     temp_symbol = '℃'
     speed_symbol = 'kph'
 
