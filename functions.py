@@ -1,25 +1,15 @@
 import random
 
 
-def get_pressure_display(hour_weather_slice):
-    return_pressure_list = []
-    current_pressure = hour_weather_slice[0]['pressure']
-    for index, hour in enumerate(hour_weather_slice):
-        y = hour['pressure']
-        if index == 4 or index == 12 or index == 23:
-            return_pressure_list += slope_calculator(0, index, current_pressure, y)
-    return return_pressure_list
-
-
-def slope_calculator(x1, x2, y1, y2):
-    return_icon = '➡'
-    rx = (y2 - y1) / (x2 - x1)
-    pressure_icons = ['↗️', '↘️']
-    if rx >= .5:
-        return_icon = pressure_icons[0]
-    elif rx <= -.5:
-        return_icon = pressure_icons[1]
-    return return_icon
+def get_pressure_display(current_pressure, previous_pressure, gap):
+    pressure_icons = ['➡', '↗', '↘']
+    pressure_return = 0
+    slope = previous_pressure - current_pressure / gap
+    if slope > .5:
+        pressure_return = 1
+    elif slope < -.5:
+        pressure_return = 2
+    return pressure_icons[pressure_return]
 
 
 def get_sun_icons(hour, sunrise, sunset):

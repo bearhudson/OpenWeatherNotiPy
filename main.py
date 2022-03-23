@@ -16,9 +16,9 @@ from functions import *
 ZIPCODE = os.environ.get('ZIPCODE')
 UNITS = os.environ.get('UNITS')
 NEWS_API = os.environ.get("NEWSAPI_KEY")
-PRESSURE_ICONS = ['↗', '➡', '↘']
 SLEEP = 60
-DISPLAY_WIDTH = 140
+DISPLAY_WIDTH = os.get_terminal_size().columns
+
 
 if UNITS == 'imperial':
     weather_location = WeatherClass(ZIPCODE, 'imperial')
@@ -34,15 +34,18 @@ def draw_main_table() -> Table:
     current_weather_slice = weather_location.weather_data['current']
     hourly_weather_slice = weather_location.weather_data['hourly']
     daily_weather_slice = weather_location.weather_data['daily']
-    # daily_history_slice = weather_location.today_historic_data['daily']
 
     historic_slice = []
-    while len(daily_weather_slice) <= 1:
+    while len(historic_slice) <= 1:
         weather_location.get_historic_weather(len(historic_slice))
         historic_slice += weather_location.historic_data['hourly'][:1]
 
-    # pressure_icons = get_pressure_display(daily_history_slice)
-    # print(f"{pressure_icons}")
+    pressure_display = []
+    weather_location.get_historic_weather(1)
+    for index, record in enumerate(weather_location.historic_data['hourly']):
+        if index == 1 or index == 5 or index == 12:
+            pressure_display += get_pressure_display(current_weather_slice['pressure'], record['pressure'], index)
+
     news = NewsApiClient(api_key=NEWS_API)
     top_headlines = news.get_top_headlines(sources='bbc-news')
 
@@ -83,7 +86,7 @@ def draw_main_table() -> Table:
                        f"{current_weather_slice['weather'][0]['description']}")
     header_desc.stylize(f"{header_style}")
     header_table.add_column(header_desc)
-    header_pressure = Text(f"🌈 {current_weather_slice['pressure']} mb")
+    header_pressure = Text(f"🌈 {current_weather_slice['pressure']} mb {''.join(pressure_display)}")
     header_pressure.stylize(f"{header_style}")
     header_table.add_column(header_pressure)
     if sun_icons[0] == "am":
@@ -203,7 +206,7 @@ def draw_main_table() -> Table:
     articles = top_headlines['articles']
     top_headlines_table.add_row(f"\tHeadlines ->", style=f"{main_table_style}")
     for article in random.sample(articles, 4):
-        top_headlines_table.add_row(f"\t{article['description'][:130]}")
+        top_headlines_table.add_row(f"\t{article['description'][:DISPLAY_WIDTH-10]}")
 
     main_table.add_row(header_table)
     main_table.add_row(today_table)
