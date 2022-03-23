@@ -72,6 +72,7 @@ def draw_main_table() -> Table:
                                 padding=0, pad_edge=False, width=DISPLAY_WIDTH, row_styles=["grey62", "grey93"])
     header_temp = Text(f"{get_time_emoji(int(datetime.datetime.strftime(datetime.datetime.now(), '%H')))} "
                        f"{datetime.datetime.strftime(datetime.datetime.now(), '%H:%M')} // "
+                       f"{datetime.datetime.strftime(datetime.datetime.now(), '%b, %d')} // "
                        f"🌡️ {current_weather_slice['temp']} {temp_symbol}")
     header_temp.stylize(f"{header_style}")
     header_table.add_column(header_temp)
@@ -134,14 +135,16 @@ def draw_main_table() -> Table:
     future_conditions_table.add_column("UVI", justify="right")
     future_conditions_table.add_column("Wind S", justify="right")
     future_conditions_table.add_column("Wind D", justify="right")
-    future_conditions_table.add_column("Sunrise", justify="right")
+    future_conditions_table.add_column("SunR", justify="right")
+    future_conditions_table.add_column("SunS", justify="right")
     future_conditions_table.add_column("Moon", justify="right")
     future_conditions_table.add_column("Forecast")
 
     for forecast_data in daily_weather_slice[:7]:
         dt_forecast = datetime.datetime.fromtimestamp(forecast_data['dt'])
         dt_sunrise = datetime.datetime.fromtimestamp(forecast_data['sunrise'])
-        future_conditions_table.add_row(f"{datetime.datetime.strftime(dt_forecast, '%y/%m/%d')}",
+        dt_sunset = datetime.datetime.fromtimestamp(forecast_data['sunset'])
+        future_conditions_table.add_row(f"{datetime.datetime.strftime(dt_forecast, '%A')}",
                                         f"{forecast_data['temp']['max']} {temp_symbol}",
                                         f"{forecast_data['temp']['min']} {temp_symbol}",
                                         f"{forecast_data['feels_like']['day']} {temp_symbol}",
@@ -152,6 +155,7 @@ def draw_main_table() -> Table:
                                         f"{forecast_data['wind_speed']} {speed_symbol}",
                                         f"{weather_location.deg_to_direction(forecast_data['wind_deg'])}",
                                         f"{datetime.datetime.strftime(dt_sunrise, '%H:%M')}",
+                                        f"{datetime.datetime.strftime(dt_sunset, '%H:%M')}",
                                         f"{weather_location.moon_phase_to_string(forecast_data['moon_phase'])}",
                                         f"{weather_location.check_condition(forecast_data['weather'][0]['id'])}")
 
