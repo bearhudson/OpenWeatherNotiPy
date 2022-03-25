@@ -80,7 +80,7 @@ def draw_main_table() -> Table:
     header_location = Text(f"Currently in {weather_location.geo_data['name']} ->")
     header_location.stylize(f"{header_style}")
     header_table.add_column(header_location)
-    header_desc = Text(f"{get_weather_emoji(int(current_weather_slice['weather'][0]['id']))} "
+    header_desc = Text(f"{get_weather_emoji(int(current_weather_slice['weather'][0]['id']))}  "
                        f"{current_weather_slice['weather'][0]['description']}")
     header_desc.stylize(f"{header_style}")
     header_table.add_column(header_desc)
@@ -91,8 +91,8 @@ def draw_main_table() -> Table:
         header_sunset = Text(f"{sun_icon[1]} Sunset: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
         header_sunset.stylize(f"{header_style}")
         header_table.add_column(header_sunset)
-    else:
-        header_sunrise = Text(f"{sun_icon[1]} Sunrise: {datetime.datetime.strftime(sunset_dt, '%H:%M')}")
+    elif sun_icon[0] == "pm":
+        header_sunrise = Text(f"{sun_icon[1]} Sunrise: {datetime.datetime.strftime(sunrise_dt, '%H:%M')}")
         header_sunrise.stylize(f"{header_style}")
         header_table.add_column(header_sunrise)
     header_moon = Text(f"🌜 {weather_location.moon_phase_to_string(daily_weather_slice[0]['moon_phase'])}")
@@ -204,7 +204,7 @@ def draw_main_table() -> Table:
     articles = top_headlines['articles']
     top_headlines_table.add_row(f"\tHeadlines ->", style=f"{main_table_style}")
     for article in random.sample(articles, 4):
-        top_headlines_table.add_row(f"\t{article['description'][:DISPLAY_WIDTH-10]}")
+        top_headlines_table.add_row(f"\t{article['description'][:DISPLAY_WIDTH-5]}")
 
     main_table.add_row(header_table)
     main_table.add_row(today_table)
@@ -217,8 +217,8 @@ def draw_main_table() -> Table:
 def main():
     with Live(draw_main_table(), refresh_per_second=1) as live:
         while True:
-            weather_location.get_today_history()
             weather_location.update_weather()
+            weather_location.get_today_history()
             live.update(draw_main_table())
             time.sleep(SLEEP)
 

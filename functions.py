@@ -2,7 +2,7 @@ import random
 
 
 def get_pressure_display(current_pressure, previous_pressure, gap):
-    pressure_icons = ['➡', '↗', '↘']
+    pressure_icons = ['↗', '→', '↘']
     pressure_return = 0
     slope = previous_pressure - current_pressure / gap
     if slope > .5:
@@ -22,7 +22,7 @@ def get_sun_icons(hour, sunrise, sunset):
 
 
 def get_weather_emoji(status_code):
-    emoji_list = ['❌', '⛈', '☔', '🌧', '🌨️', '🌪', '🌞', '🌤', '⛅', '☁']
+    emoji_list = ['❎', '⛈', '💦', '🌧', '🌨️', '🌪', '🌞', '🌤', '⛅', '🌥️']
     return_code = 0
     if status_code < 299:
         return_code = 1
