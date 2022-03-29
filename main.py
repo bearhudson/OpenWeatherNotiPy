@@ -158,7 +158,7 @@ def draw_main_table() -> Table:
                                         f"{datetime.datetime.strftime(dt_sunrise, '%H:%M')}",
                                         f"{datetime.datetime.strftime(dt_sunset, '%H:%M')}",
                                         f"{weather_location.moon_phase_to_string(forecast_data['moon_phase'])}",
-                                        f"{weather_location.check_condition(forecast_data['weather'][0]['id'])}")
+                                        f"{weather_location.check_condition(forecast_data['weather'][0]['id']).title()}")
 
     for index, hourly_data in zip(range(3), hourly_weather_slice[1:]):
         for hourly_conditions in hourly_data['weather']:
@@ -200,7 +200,7 @@ def draw_main_table() -> Table:
                                           f"{historic_data['uvi']}",
                                           f"{historic_data['wind_speed']} {speed_symbol}",
                                           f"{weather_location.deg_to_direction(historic_data['wind_deg'])}",
-                                          f"{weather_location.check_condition(historic_data['weather'][0]['id'])}")
+                                          f"{weather_location.check_condition(historic_data['weather'][0]['id']).title()}")
     articles = top_headlines['articles']
     top_headlines_table.add_row(f"\tHeadlines ->", style=f"{main_table_style}")
     for article in random.sample(articles, 4):
