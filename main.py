@@ -22,28 +22,28 @@ DISPLAY_WIDTH = os.get_terminal_size().columns
 SLEEP = 60
 
 if UNITS == 'imperial':
-    weather_location = owc.OpenWeatherClass(zipcode=ZIPCODE, api_key=API_KEY, units=UNITS)
+    owc_data = owc.OpenWeatherClass(zipcode=ZIPCODE, api_key=API_KEY, units=UNITS)
     temp_symbol = '℉'
     speed_symbol = 'mph'
 else:
-    weather_location = owc.OpenWeatherClass(ZIPCODE, 'metric')
+    owc_data = owc.OpenWeatherClass(zipcode=ZIPCODE, api_key=API_KEY, units=UNITS)
     temp_symbol = '℃'
     speed_symbol = 'kph'
 
 
 def draw_main_table() -> Table:
-    current_weather_slice = weather_location.weather_data['current']
-    hourly_weather_slice = weather_location.weather_data['hourly']
-    daily_weather_slice = weather_location.weather_data['daily']
+    current_weather_slice = owc_data.weather_data['current']
+    hourly_weather_slice = owc_data.weather_data['hourly']
+    daily_weather_slice = owc_data.weather_data['daily']
 
     historic_slice = []
     while len(historic_slice) <= 1:
-        weather_location.get_historic_weather(len(historic_slice))
-        historic_slice += weather_location.historic_data['hourly'][:1]
+        owc_data.get_historic_weather(len(historic_slice))
+        historic_slice += owc_data.historic_data['hourly'][:1]
 
     pressure_display = []
-    weather_location.get_historic_weather(1)
-    for index, record in enumerate(weather_location.historic_data['hourly']):
+    owc_data.get_historic_weather(1)
+    for index, record in enumerate(owc_data.historic_data['hourly']):
         if index == 1 or index == 5 or index == 12:
             pressure_display += get_pressure_display(current_weather_slice['pressure'], record['pressure'], index)
 
@@ -80,7 +80,7 @@ def draw_main_table() -> Table:
                        f"🌡️ {current_weather_slice['temp']} {temp_symbol}")
     header_temp.stylize(f"{header_style}")
     header_table.add_column(header_temp)
-    header_location = Text(f"Currently in {weather_location.geo_data['name']} ->")
+    header_location = Text(f"Currently in {owc_data.geo_data['name']} ->")
     header_location.stylize(f"{header_style}")
     header_table.add_column(header_location)
     header_desc = Text(f"{get_weather_emoji(int(current_weather_slice['weather'][0]['id']))}  "
@@ -161,7 +161,7 @@ def draw_main_table() -> Table:
                                         f"{datetime.datetime.strftime(dt_sunrise, '%H:%M')}",
                                         f"{datetime.datetime.strftime(dt_sunset, '%H:%M')}",
                                         f"{moon_phase_to_string(forecast_data['moon_phase'])}",
-                                        f"{weather_location.check_condition(forecast_data['weather'][0]['id']).title()}")
+                                        f"{owc_data.check_condition(forecast_data['weather'][0]['id']).title()}")
 
     for index, hourly_data in zip(range(3), hourly_weather_slice[1:]):
         for hourly_conditions in hourly_data['weather']:
@@ -203,7 +203,7 @@ def draw_main_table() -> Table:
                                           f"{historic_data['uvi']}",
                                           f"{historic_data['wind_speed']} {speed_symbol}",
                                           f"{deg_to_direction(historic_data['wind_deg'])}",
-                                          f"{weather_location.check_condition(historic_data['weather'][0]['id']).title()}")
+                                          f"{owc_data.check_condition(historic_data['weather'][0]['id']).title()}")
     articles = top_headlines['articles']
     top_headlines_table.add_row(f"\tHeadlines ->", style=f"{main_table_style}")
     for article in random.sample(articles, 4):
@@ -220,8 +220,9 @@ def draw_main_table() -> Table:
 def main():
     with Live(draw_main_table(), refresh_per_second=1) as live:
         while True:
-            weather_location.update_weather()
-            weather_location.get_today_history()
+            time.sleep(1)
+            owc_data.update_weather()
+            owc_data.get_today_history()
             live.update(draw_main_table())
             time.sleep(SLEEP)
 
