@@ -3,27 +3,30 @@
 import datetime
 import time
 import os
+
+import openweatherclass as owc
+from openweatherclass.functions import deg_to_direction
+from openweatherclass.functions import moon_phase_to_string
 from rich.live import Live
 from rich.table import Table
 from rich import box
 from rich.text import Text
 from newsapi import NewsApiClient
-
-from WeatherClass.WeatherClass.weatherclass import WeatherClass
 from functions import *
 
+API_KEY = os.environ.get("OPENWEATHER_API_KEY")
+NEWS_API = os.environ.get("NEWSAPI_KEY")
 ZIPCODE = os.environ.get('ZIPCODE')
 UNITS = os.environ.get('UNITS')
-NEWS_API = os.environ.get("NEWSAPI_KEY")
 DISPLAY_WIDTH = os.get_terminal_size().columns
 SLEEP = 60
 
 if UNITS == 'imperial':
-    weather_location = WeatherClass(ZIPCODE, 'imperial')
+    weather_location = owc.OpenWeatherClass(zipcode=ZIPCODE, api_key=API_KEY, units=UNITS)
     temp_symbol = '℉'
     speed_symbol = 'mph'
 else:
-    weather_location = WeatherClass(ZIPCODE, 'metric')
+    weather_location = owc.OpenWeatherClass(ZIPCODE, 'metric')
     temp_symbol = '℃'
     speed_symbol = 'kph'
 
@@ -95,7 +98,7 @@ def draw_main_table() -> Table:
         header_sunrise = Text(f"{sun_icon[1]} Sunrise: {datetime.datetime.strftime(sunrise_dt, '%H:%M')}")
         header_sunrise.stylize(f"{header_style}")
         header_table.add_column(header_sunrise)
-    header_moon = Text(f"🌜 {weather_location.moon_phase_to_string(daily_weather_slice[0]['moon_phase'])}")
+    header_moon = Text(f"🌜 {moon_phase_to_string(daily_weather_slice[0]['moon_phase'])}")
     header_moon.stylize(f"{header_style}")
     header_table.add_column(header_moon)
 
@@ -124,7 +127,7 @@ def draw_main_table() -> Table:
                         f"{current_weather_slice['clouds']} %",
                         f"{current_weather_slice['uvi']}",
                         f"{current_weather_slice['wind_speed']} {speed_symbol}",
-                        f"{weather_location.deg_to_direction(current_weather_slice['wind_deg'])}",
+                        f"{deg_to_direction(current_weather_slice['wind_deg'])}",
                         conditions_table)
     future_conditions_table.add_column("Date", justify="right")
     future_conditions_table.add_column("High", justify="left")
@@ -154,10 +157,10 @@ def draw_main_table() -> Table:
                                         f"{forecast_data['dew_point']} {temp_symbol}",
                                         f"{forecast_data['uvi']}",
                                         f"{forecast_data['wind_speed']} {speed_symbol}",
-                                        f"{weather_location.deg_to_direction(forecast_data['wind_deg'])}",
+                                        f"{deg_to_direction(forecast_data['wind_deg'])}",
                                         f"{datetime.datetime.strftime(dt_sunrise, '%H:%M')}",
                                         f"{datetime.datetime.strftime(dt_sunset, '%H:%M')}",
-                                        f"{weather_location.moon_phase_to_string(forecast_data['moon_phase'])}",
+                                        f"{moon_phase_to_string(forecast_data['moon_phase'])}",
                                         f"{weather_location.check_condition(forecast_data['weather'][0]['id']).title()}")
 
     for index, hourly_data in zip(range(3), hourly_weather_slice[1:]):
@@ -174,7 +177,7 @@ def draw_main_table() -> Table:
                             f"{hourly_data['clouds']} %",
                             f"{hourly_data['uvi']}",
                             f"{hourly_data['wind_speed']} {speed_symbol}",
-                            f"{weather_location.deg_to_direction(hourly_data['wind_deg'])}",
+                            f"{deg_to_direction(hourly_data['wind_deg'])}",
                             hourly_conditions_table)
     historic_conditions_table.add_column("Date", justify="right")
     historic_conditions_table.add_column("Temp", justify="left")
@@ -199,7 +202,7 @@ def draw_main_table() -> Table:
                                           f"{historic_data['clouds']} %",
                                           f"{historic_data['uvi']}",
                                           f"{historic_data['wind_speed']} {speed_symbol}",
-                                          f"{weather_location.deg_to_direction(historic_data['wind_deg'])}",
+                                          f"{deg_to_direction(historic_data['wind_deg'])}",
                                           f"{weather_location.check_condition(historic_data['weather'][0]['id']).title()}")
     articles = top_headlines['articles']
     top_headlines_table.add_row(f"\tHeadlines ->", style=f"{main_table_style}")
