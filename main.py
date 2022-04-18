@@ -19,7 +19,7 @@ NEWS_API = os.environ.get("NEWSAPI_KEY")
 ZIPCODE = os.environ.get('ZIPCODE')
 UNITS = os.environ.get('UNITS')
 DISPLAY_WIDTH = os.get_terminal_size().columns
-SLEEP = 60
+SLEEP = 360
 
 if UNITS == 'imperial':
     owc_data = owc.OpenWeatherClass(zipcode=ZIPCODE, api_key=API_KEY, units=UNITS)
@@ -49,6 +49,7 @@ def draw_main_table() -> Table:
 
     news = NewsApiClient(api_key=NEWS_API)
     top_headlines = news.get_top_headlines(sources='bbc-news')
+    articles = top_headlines['articles']
 
     del daily_weather_slice[0]
 
@@ -72,8 +73,9 @@ def draw_main_table() -> Table:
                                     padding=0, pad_edge=False, width=DISPLAY_WIDTH, row_styles=["grey62", "grey93"])
     historic_conditions_table = Table(box=box_style,
                                       padding=0, pad_edge=False, width=DISPLAY_WIDTH, row_styles=["grey62", "grey93"])
-    top_headlines_table = Table(box=None,
+    news_and_alerts_table = Table(box=None,
                                 padding=0, pad_edge=False, width=DISPLAY_WIDTH, row_styles=["grey62", "grey93"])
+
     header_temp = Text(f"{get_time_emoji(int(datetime.datetime.strftime(datetime.datetime.now(), '%H')))} "
                        f"{datetime.datetime.strftime(datetime.datetime.now(), '%H:%M')} // "
                        f"{datetime.datetime.strftime(datetime.datetime.now(), '%b, %d')} // "
@@ -127,8 +129,7 @@ def draw_main_table() -> Table:
                         f"{current_weather_slice['clouds']} %",
                         f"{current_weather_slice['uvi']}",
                         f"{current_weather_slice['wind_speed']} {speed_symbol}",
-                        f"{deg_to_direction(current_weather_slice['wind_deg'])}",
-                        conditions_table)
+                        f"{deg_to_direction(current_weather_slice['wind_deg'])}", conditions_table)
     future_conditions_table.add_column("Date", justify="right")
     future_conditions_table.add_column("High", justify="left")
     future_conditions_table.add_column("Low", justify="left")
@@ -163,7 +164,7 @@ def draw_main_table() -> Table:
                                         f"{moon_phase_to_string(forecast_data['moon_phase'])}",
                                         f"{owc_data.check_condition(forecast_data['weather'][0]['id']).title()}")
 
-    for index, hourly_data in zip(range(3), hourly_weather_slice[1:]):
+    for index, hourly_data in zip(range(8), hourly_weather_slice[1:]):
         for hourly_conditions in hourly_data['weather']:
             hourly_conditions_table.add_column(f"{hourly_conditions['main']}")
         dt_old = datetime.datetime.fromtimestamp(hourly_data['dt'])
@@ -178,7 +179,7 @@ def draw_main_table() -> Table:
                             f"{hourly_data['uvi']}",
                             f"{hourly_data['wind_speed']} {speed_symbol}",
                             f"{deg_to_direction(hourly_data['wind_deg'])}",
-                            hourly_conditions_table)
+                            f"{owc_data.check_condition(hourly_data['weather'][0]['id']).title()}")
     historic_conditions_table.add_column("Date", justify="right")
     historic_conditions_table.add_column("Temp", justify="left")
     historic_conditions_table.add_column("Feels Like", justify="left")
@@ -204,16 +205,25 @@ def draw_main_table() -> Table:
                                           f"{historic_data['wind_speed']} {speed_symbol}",
                                           f"{deg_to_direction(historic_data['wind_deg'])}",
                                           f"{owc_data.check_condition(historic_data['weather'][0]['id']).title()}")
-    articles = top_headlines['articles']
-    top_headlines_table.add_row(f"\tHeadlines ->", style=f"{main_table_style}")
+
+    news_and_alerts_table.add_row(f"Headlines ->", style=f"{main_table_style}")
     for article in random.sample(articles, 4):
-        top_headlines_table.add_row(f"\t{article['description'][:DISPLAY_WIDTH-5]}")
+        news_and_alerts_table.add_row(f"{article['description'][:DISPLAY_WIDTH-5]}")
+    news_and_alerts_table.add_row(f"Alerts ->", style=f"{main_table_style}")
+    if owc_data.weather_data['alerts']:
+        alerts_slice = owc_data.weather_data['alerts']
+        for alert in alerts_slice:
+            alert_sender = alert['sender_name']
+            news_and_alerts_table.add_row(f"{alert_sender}: {alert['description']}".replace('\n', ''), style='white')
+    else:
+        news_and_alerts_table.add_row(f"No alerts at this time.")
 
     main_table.add_row(header_table)
     main_table.add_row(today_table)
     main_table.add_row(future_conditions_table)
     main_table.add_row(historic_conditions_table)
-    main_table.add_row(top_headlines_table)
+    main_table.add_row(news_and_alerts_table)
+
     return main_table
 
 
