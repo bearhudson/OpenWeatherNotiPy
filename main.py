@@ -4,14 +4,16 @@ import datetime
 import time
 import os
 
-import openweatherclass as owc
-from openweatherclass.functions import deg_to_direction
-from openweatherclass.functions import moon_phase_to_string
 from rich.live import Live
 from rich.table import Table
 from rich import box
 from rich.text import Text
 from newsapi import NewsApiClient
+import asyncio
+from pyiqvia import Client as IqviaClient
+import openweatherclass as owc
+from openweatherclass.functions import deg_to_direction
+from openweatherclass.functions import moon_phase_to_string
 from functions import *
 
 API_KEY = os.environ.get("OPENWEATHER_API_KEY")
@@ -73,8 +75,8 @@ def draw_main_table() -> Table:
                                     padding=0, pad_edge=False, width=DISPLAY_WIDTH, row_styles=["grey62", "grey93"])
     historic_conditions_table = Table(box=box_style,
                                       padding=0, pad_edge=False, width=DISPLAY_WIDTH, row_styles=["grey62", "grey93"])
-    news_and_alerts_table = Table(box=None,
-                                padding=0, pad_edge=False, width=DISPLAY_WIDTH, row_styles=["grey62", "grey93"])
+    news_and_alerts_table = Table(box=box.SQUARE_DOUBLE_HEAD, show_header=False, padding=0, pad_edge=False,
+                                  width=DISPLAY_WIDTH, row_styles=["grey62", "grey93"])
 
     header_temp = Text(f"{get_time_emoji(int(datetime.datetime.strftime(datetime.datetime.now(), '%H')))} "
                        f"{datetime.datetime.strftime(datetime.datetime.now(), '%H:%M')} // "
@@ -206,28 +208,29 @@ def draw_main_table() -> Table:
                                           f"{deg_to_direction(historic_data['wind_deg'])}",
                                           f"{owc_data.check_condition(historic_data['weather'][0]['id']).title()}")
 
-    news_and_alerts_table.add_row(f"Headlines ->", style=f"{main_table_style}")
-    for article in random.sample(articles, 4):
-        news_and_alerts_table.add_row(f"{article['description'][:DISPLAY_WIDTH-5]}")
+    news_and_alerts_table.add_row(f"Air Quality ->", style=f"{main_table_style}")
+    news_and_alerts_table.add_row(f"{asyncio.run(get_pollen(PZIPCODE=ZIPCODE))}")
     news_and_alerts_table.add_row(f"Alerts ->", style=f"{main_table_style}")
-    if owc_data.weather_data['alerts']:
+    if 'alerts' in owc_data.weather_data:
         alerts_slice = owc_data.weather_data['alerts']
         for alert in alerts_slice:
             alert_sender = alert['sender_name']
             news_and_alerts_table.add_row(f"{alert_sender}: {alert['description']}".replace('\n', ''), style='white')
     else:
         news_and_alerts_table.add_row(f"No alerts at this time.")
+    news_and_alerts_table.add_row(f"Headlines ->", style=f"{main_table_style}")
+    for article in random.sample(articles, 4):
+        news_and_alerts_table.add_row(f"{article['description'][:DISPLAY_WIDTH - 5]}")
 
     main_table.add_row(header_table)
     main_table.add_row(today_table)
     main_table.add_row(future_conditions_table)
     main_table.add_row(historic_conditions_table)
     main_table.add_row(news_and_alerts_table)
-
     return main_table
 
 
-def main():
+def main() -> None:
     with Live(draw_main_table(), refresh_per_second=1) as live:
         while True:
             time.sleep(1)
@@ -235,6 +238,11 @@ def main():
             owc_data.get_today_history()
             live.update(draw_main_table())
             time.sleep(SLEEP)
+
+
+async def get_pollen(PZIPCODE) -> None:
+    allergens_outlook = await IqviaClient(PZIPCODE).allergens.outlook()
+    return allergens_outlook["Trend"].title() + ": " + allergens_outlook["Outlook"]
 
 
 if __name__ == "__main__":
