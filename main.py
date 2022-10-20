@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import datetime
-import time
 import os
 
 from rich.live import Live
@@ -21,7 +20,7 @@ NEWS_API = os.environ.get("NEWSAPI_KEY")
 ZIPCODE = os.environ.get('ZIPCODE')
 UNITS = os.environ.get('UNITS')
 DISPLAY_WIDTH = os.get_terminal_size().columns
-SLEEP = 360
+REFRESH_PER_SECOND = 2 / 60
 
 if UNITS == 'imperial':
     owc_data = owc.OpenWeatherClass(zipcode=ZIPCODE, api_key=API_KEY, units=UNITS)
@@ -85,7 +84,7 @@ def draw_main_table() -> Table:
                        f"🏭 {header_ozone[0].title()}: {header_ozone[1]} ppm")
     header_temp.stylize(f"{header_style}")
     header_table.add_column(header_temp)
-    header_location = Text(f"Currently in {owc_data.geo_data['name']} ->")
+    header_location = Text(f"~~ The {owc_data.geo_data['name']} Weather ~~")
     header_location.stylize(f"{header_style}")
     header_table.add_column(header_location)
     header_desc = Text(f"{get_weather_emoji(int(current_weather_slice['weather'][0]['id']))}  "
@@ -167,7 +166,7 @@ def draw_main_table() -> Table:
                                         f"{moon_phase_to_string(forecast_data['moon_phase'])}",
                                         f"{owc_data.check_condition(forecast_data['weather'][0]['id']).title()}")
 
-    for index, hourly_data in zip(range(8), hourly_weather_slice[1:]):
+    for index, hourly_data in zip(range(7), hourly_weather_slice[1:]):
         for hourly_conditions in hourly_data['weather']:
             hourly_conditions_table.add_column(f"{hourly_conditions['main']}")
         dt_old = datetime.datetime.fromtimestamp(hourly_data['dt'])
@@ -232,13 +231,11 @@ def draw_main_table() -> Table:
 
 
 def main() -> None:
-    with Live(draw_main_table(), refresh_per_second=1) as live:
+    with Live(draw_main_table(), refresh_per_second=REFRESH_PER_SECOND) as live:
         while True:
-            time.sleep(1)
             owc_data.update_weather()
             owc_data.get_today_history()
             live.update(draw_main_table())
-            time.sleep(SLEEP)
 
 
 async def get_pollen(PZIPCODE) -> str:
